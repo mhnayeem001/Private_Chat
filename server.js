@@ -10,6 +10,10 @@ const compression = require('compression');
 const xss = require('xss');
 
 const app = express();
+
+// Trust proxy setting for Replit environment
+app.set('trust proxy', 1);
+
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {

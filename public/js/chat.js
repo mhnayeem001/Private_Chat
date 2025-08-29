@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
             updateConnectionStatus('Connection failed', 'error');
         });
 
-        socket.on('roomJoined', (data) => {
+        socket.on('roomJoined', async (data) => {
             console.log('Room joined:', data);
             roomId = data.roomId;
             currentUsername = data.username;
@@ -159,7 +159,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Load existing messages
             if (data.messages && data.messages.length > 0) {
-                data.messages.forEach(message => displayMessage(message));
+                for (const message of data.messages) {
+                    await displayMessage(message);
+                }
             }
             
             updateConnectionStatus('Connected to chat', 'success');
@@ -182,8 +184,8 @@ document.addEventListener('DOMContentLoaded', function() {
             mainUtils.showToast(`${data.username} left the chat`, 'info');
         });
 
-        socket.on('message', (message) => {
-            displayMessage(message);
+        socket.on('message', async (message) => {
+            await displayMessage(message);
         });
 
         socket.on('userTyping', (data) => {
@@ -258,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Display message in chat
-    function displayMessage(message) {
+    async function displayMessage(message) {
         if (!messagesContainer) return;
 
         const messageDiv = document.createElement('div');

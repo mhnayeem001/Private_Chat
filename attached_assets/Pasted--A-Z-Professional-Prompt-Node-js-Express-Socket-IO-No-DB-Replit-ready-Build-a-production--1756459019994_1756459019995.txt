@@ -1,0 +1,211 @@
+📝 A→Z Professional Prompt (Node.js + Express + Socket.IO, No DB, Replit-ready)
+
+Build a production-quality, privacy-first, 1-to-1 private chat web app using Node.js, Express, and Socket.IO that runs on Replit with zero manual fixes. Generate the complete project with the file structure, all code, and dependencies.
+
+Core Requirements
+
+No Database (Stateless):
+
+Do not persist messages or images.
+
+Use in-memory maps for ephemeral tokens/rooms only.
+
+If the server restarts, everything resets (acceptable and intended).
+
+Login & Unique Link Flow (Two Entrances):
+
+Home page shows two options:
+
+Login → user enters a username (and optional simple password) → server generates a one-time unique chat link like /chat/<token> and shows a “Copy Link” button.
+
+Login with Chat Link → user pastes/visits the received link → enters their username → joins the chat with the original user.
+
+Token rules: one-time use, invalid after second user joins or after expiry (e.g., 5 minutes)—whichever comes first.
+
+If any third user tries to join, show “Room is full or link expired.”
+
+1-to-1 Chat Features:
+
+Real-time text messaging via Socket.IO.
+
+Image sending via Base64 over WebSocket (no file storage).
+
+Client-side size limit (e.g., max 1MB); show graceful error if exceeded.
+
+Inline preview in the chat bubble.
+
+Typing indicator (“X is typing…”).
+
+Auto-scroll to latest message.
+
+System messages for join/leave.
+
+Show per-message timestamp (local time).
+
+Show who is online in that room (just the two names).
+
+Security & Privacy:
+
+No server-side logs for message contents.
+
+Sanitize all incoming/outgoing plain text (escape HTML) to prevent XSS.
+
+Add helmet for HTTP headers hardening; cors with safe defaults.
+
+Use secure cookies only if needed for session; keep it minimal.
+
+Optional E2E encryption (client-side AES-GCM):
+
+If the sender enters a shared passphrase, derive a key (PBKDF2) and encrypt messages & images in the browser; server only relays ciphertext.
+
+If no passphrase set, send plaintext (still sanitized) — this toggle is per-room in UI.
+
+Provide a clear on/off indicator for E2EE state in the chat header.
+
+Rate-limit join attempts and message send frequency (basic throttling) to avoid abuse.
+
+Validate token format and existence on every join.
+
+UI/UX (Professional & Responsive):
+
+Clean layout with TailwindCSS (CDN) and AlpineJS for small UI logic.
+
+Dark/Light theme toggle with:
+
+CSS variables and data-theme attribute.
+
+Persist choice in localStorage.
+
+Default to Dark.
+
+Modern rounded chat bubbles, timestamps, and subtle animations.
+
+Mobile-first responsive design; large tap targets; safe area padding.
+
+Header shows:
+
+Room users (A ↔ B)
+
+E2EE status (On/Off)
+
+Theme toggle
+
+Footer shows message input, image upload button, and send button.
+
+Copy-to-clipboard button for the unique link (with toast/snackbar).
+
+Replit & Project Setup:
+
+Provide package.json with scripts:
+
+"start": "node server.js"
+
+"dev": "nodemon server.js"
+
+Dependencies: express, socket.io, uuid, helmet, cors, xss, dompurify (if used server-side with JSDOM), cookie-parser, express-rate-limit, compression.
+
+Dev deps: nodemon.
+
+Server must listen on process.env.PORT || 3000.
+
+Static files served from /public. Views can be plain HTML (no templating engine necessary).
+
+Include a clear README.md with run instructions on Replit.
+
+File/Folder Structure (generate all files with code):
+
+/server.js
+/package.json
+/README.md
+/public/
+  index.html            // Home with two options
+  login.html            // Login to generate link
+  join.html             // Join via chat link
+  chat.html             // Main chat UI
+  css/styles.css        // Tailwind base + custom theme variables
+  js/main.js            // Theme toggle, helpers
+  js/login.js           // Handles login + fetch link
+  js/join.js            // Handles join via token
+  js/chat.js            // Socket.IO logic, E2EE crypto, typing, images
+  img/                  // (optional) icons (light/dark), kept minimal
+
+
+Routing & Socket Logic:
+
+GET / → index.html (two cards: “Login” and “Login with Chat Link”).
+
+GET /login → login.html (username + optional password form).
+
+POST /login → create unique token (UUID v4), store { ownerUsername, createdAt, used:false } in memory, respond showing the unique link and a copy button.
+
+GET /chat/:token → if valid & not used/expired → serve join.html (second user enters username). If invalid or used/expired → show friendly error page.
+
+When the second user successfully joins, mark token as used and create a room keyed by token. Owner joins room when they open their chat page.
+
+Socket events (/socket.io namespace default):
+
+joinRoom → payload: { token, username, e2ee: boolean }
+Server validates token & room capacity (max 2). On success, add socket to room and broadcast a system join message.
+
+typing → broadcast to the other peer only.
+
+sendMessage → { token, username, text?, imageBase64?, nonce?, authTag? }
+Sanitize if plaintext; if ciphertext, relay as-is. Enforce rate-limit (e.g., 5 msgs/sec).
+
+disconnect → notify the remaining user with a system message.
+
+Token expiry: auto-expire tokens 5 minutes after creation with setTimeout; also invalidate once two users are in.
+
+Client-side E2EE (Optional Mode):
+
+Use Web Crypto API:
+
+Derive key from passphrase with PBKDF2 (SHA-256, random salt stored in memory for the session).
+
+AES-GCM encrypt text and image (image base64 string treated as text before encrypt).
+
+Send { ciphertext, iv, salt } fields.
+
+On receive, if E2EE is ON and key available, decrypt; else show “[Encrypted message] (no key)” hint.
+
+Provide a small modal to set/clear the passphrase.
+
+Error States & UX Polishing:
+
+Friendly pages for: invalid/expired link, room full, username taken in room, file too large.
+
+Snackbar/toast for copy link success, theme changed, encryption toggled.
+
+Disable send while image is converting/uploading.
+
+Acceptance Criteria (must pass):
+
+Starting on Replit launches the app without code edits.
+
+Home → Login → generates a unique one-time link and copy button.
+
+Opening the link on another device/browser → “Join” page → enter username → lands in a chat with the original user.
+
+Only text and images work; no video/call; nothing is stored.
+
+Dark/Light toggle persists via localStorage.
+
+Typing indicator, timestamps, auto-scroll, join/leave system messages work.
+
+E2EE toggle encrypts/decrypts correctly in the browser (when passphrase is set).
+
+Third user cannot join; old link cannot be reused.
+
+Code Quality:
+
+Comment important parts (token lifecycle, room capacity, E2EE).
+
+Modular client JS (separate files).
+
+Use helmet, cors, compression, and basic express-rate-limit.
+
+Sanitize any plain text with xss or server-side DOMPurify pattern.
+
+Keep bundle lean; Tailwind via CDN; AlpineJS via CDN.
+
+Deliverables: Provide all source files with working code exactly as described, ready to “Run” on Replit without further edits. Include a README.md explaining features, flows, and how to test with two browsers/devices.

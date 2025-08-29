@@ -1,199 +1,415 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Chat - Private Chat App</title>
+    <title>Create Chat - Private Chat</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        /* Custom theme variables */
+        :root {
+            --bg-primary: #f9fafb;
+            --bg-secondary: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border: #e5e7eb;
+            --accent: #3b82f6;
+            --success: #10b981;
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border: #374151;
+            --accent: #60a5fa;
+            --success: #34d399;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-top: 12px;
+            font-size: 16px;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+        
+        .input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 16px; /* Prevents zoom on iOS */
+        }
+        
+        .input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .copy-section {
+            background-color: var(--bg-primary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        
+        .copy-input {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 10px;
+            width: 100%;
+            font-family: monospace;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .spinner {
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .success-message {
+            background-color: var(--success);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .error-message {
+            background-color: #ef4444;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+    </style>
 </head>
-<body class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+<body>
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg id="sunIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+        <svg id="moonIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        </svg>
+    </button>
+
     <div class="min-h-screen flex items-center justify-center p-4">
-        <div class="max-w-md w-full space-y-8">
-            <!-- Header -->
-            <div class="text-center">
-                <a href="/" class="inline-flex items-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 mb-4">
-                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                    Back to Home
+        <div class="w-full max-w-md">
+            <!-- Back Button -->
+            <div class="text-center mb-6">
+                <a href="/" style="color: var(--accent); text-decoration: none;">
+                    ← Back to Home
                 </a>
-                
-                <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-                    <svg class="h-8 w-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            </div>
+
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
                 </div>
-                <h2 class="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
-                    Create Chat Room
-                </h2>
-                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    Enter your details to generate a unique chat link
-                </p>
+                <h1 class="text-2xl font-bold mb-2">Create Chat Room</h1>
+                <p style="color: var(--text-secondary);">Enter your name to generate a private chat link</p>
             </div>
 
-            <!-- Theme Toggle -->
-            <div class="flex justify-center">
-                <button 
-                    id="themeToggle"
-                    class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                    title="Toggle theme"
-                >
-                    <svg id="sunIcon" class="h-5 w-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                    </svg>
-                    <svg id="moonIcon" class="h-5 w-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                    </svg>
-                </button>
-            </div>
+            <!-- Messages -->
+            <div id="messageContainer"></div>
 
-            <!-- Login Form -->
-            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-                <form id="loginForm" class="space-y-6">
-                    <div>
-                        <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Username *
-                        </label>
-                        <div class="mt-1">
-                            <input 
-                                id="username" 
-                                name="username" 
-                                type="text" 
-                                required 
-                                maxlength="50"
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                placeholder="Enter your username"
-                            >
-                        </div>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            This will be your display name in the chat
-                        </p>
-                    </div>
-
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Password (Optional)
-                        </label>
-                        <div class="mt-1">
-                            <input 
-                                id="password" 
-                                name="password" 
-                                type="password" 
-                                class="appearance-none block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                placeholder="Optional password for UI"
-                            >
-                        </div>
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            For display purposes only - real security comes from E2E encryption
-                        </p>
-                    </div>
-
-                    <div>
-                        <button 
-                            type="submit" 
-                            id="submitBtn"
-                            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            <!-- Create Form -->
+            <div id="createForm" class="card">
+                <form id="usernameForm">
+                    <div class="mb-4">
+                        <label for="username" class="block text-sm font-medium mb-2">Your Name</label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            class="input" 
+                            placeholder="Enter your name..."
+                            required
+                            maxlength="50"
+                            autocomplete="name"
                         >
-                            <span id="btnText">Generate Chat Link</span>
-                            <svg id="loadingSpinner" class="hidden animate-spin -mr-1 ml-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        </button>
                     </div>
+                    
+                    <button type="submit" class="btn" id="createBtn">
+                        <span id="btnText">Create Chat Link</span>
+                    </button>
                 </form>
             </div>
 
-            <!-- Success View (Initially Hidden) -->
-            <div id="successView" class="hidden bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-                <div class="text-center">
-                    <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-                        <svg class="h-8 w-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- Success View -->
+            <div id="successView" class="card" style="display: none;">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                        <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                     </div>
-                    <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">
-                        Chat Link Created!
-                    </h3>
-                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                        Share this link with someone to start chatting
-                    </p>
+                    <h3 class="text-xl font-bold mb-2">Chat Link Created!</h3>
+                    <p style="color: var(--text-secondary);">Share this link to start chatting</p>
                 </div>
 
-                <div class="mt-6 space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Your Chat Link:
-                        </label>
-                        <div class="flex">
-                            <input 
-                                id="generatedLink" 
-                                type="text" 
-                                readonly 
-                                class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-md bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:outline-none"
-                            >
-                            <button 
-                                id="copyBtn"
-                                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-r-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors"
-                                title="Copy to clipboard"
-                            >
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
+                <div class="copy-section">
+                    <label class="block text-sm font-medium mb-2">Your Chat Link:</label>
+                    <input type="text" id="generatedLink" class="copy-input" readonly>
+                    <button class="btn btn-success" id="copyBtn">
+                        📋 Copy Link
+                    </button>
+                </div>
 
-                    <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-md p-4">
-                        <div class="flex">
-                            <svg class="h-5 w-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.996-.833-2.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                            </svg>
-                            <div>
-                                <h4 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                                    Important Notes:
-                                </h4>
-                                <ul class="mt-1 text-xs text-yellow-700 dark:text-yellow-300 space-y-1">
-                                    <li>• Link expires in 5 minutes</li>
-                                    <li>• Only 2 people can join</li>
-                                    <li>• One-time use only</li>
-                                    <li>• Messages not stored after server restart</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+                <div class="mt-6 space-y-3">
+                    <button class="btn btn-success" id="joinBtn">
+                        💬 Join Chat Now
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.location.href='/'">
+                        Create Another Room
+                    </button>
+                </div>
 
-                    <div class="flex space-x-3">
-                        <button 
-                            id="joinChatBtn"
-                            class="flex-1 py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-green-500 transition-colors"
-                        >
-                            Join Chat Now
-                        </button>
-                        <button 
-                            onclick="location.href='/'"
-                            class="flex-1 py-3 px-4 bg-gray-600 hover:bg-gray-700 text-white rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
-                        >
-                            Create Another
-                        </button>
+                <div class="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg">
+                    <div class="text-sm" style="color: var(--text-secondary);">
+                        ⚠️ <strong>Important:</strong>
+                        <ul class="mt-2 space-y-1 text-xs">
+                            <li>• Link expires in 5 minutes</li>
+                            <li>• Maximum 2 people per room</li>
+                            <li>• Messages are not saved permanently</li>
+                        </ul>
                     </div>
                 </div>
-            </div>
-
-            <!-- Info -->
-            <div class="text-center text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                <p>🔒 Your data is never stored permanently</p>
-                <p>💬 Enable E2E encryption in chat for maximum privacy</p>
             </div>
         </div>
     </div>
 
-    <!-- Toast Container -->
-    <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+    <script>
+        let generatedChatLink = '';
 
-    <script src="/js/main.js"></script>
-    <script src="/js/login.js"></script>
+        // Theme management
+        function initTheme() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            updateThemeIcon(theme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            
+            if (theme === 'dark') {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            } else {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            }
+        }
+
+        // Message handling
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            const className = type === 'error' ? 'error-message' : 'success-message';
+            container.innerHTML = `<div class="${className}">${message}</div>`;
+            
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        // Copy to clipboard
+        async function copyToClipboard(text) {
+            try {
+                if (navigator.clipboard) {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                } else {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    const result = document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    return result;
+                }
+            } catch (err) {
+                return false;
+            }
+        }
+
+        // Form submission
+        document.getElementById('usernameForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const createBtn = document.getElementById('createBtn');
+            const btnText = document.getElementById('btnText');
+            
+            if (!username) {
+                showMessage('Please enter your name', 'error');
+                return;
+            }
+            
+            if (username.length > 50) {
+                showMessage('Name must be 50 characters or less', 'error');
+                return;
+            }
+            
+            // Show loading
+            createBtn.disabled = true;
+            btnText.innerHTML = '<span class="spinner"></span>Creating...';
+            
+            try {
+                const response = await fetch('/create-room', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    generatedChatLink = data.chatLink;
+                    showSuccessView(data);
+                } else {
+                    showMessage(data.error || 'Failed to create chat room', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Network error. Please try again.', 'error');
+            } finally {
+                createBtn.disabled = false;
+                btnText.textContent = 'Create Chat Link';
+            }
+        });
+
+        function showSuccessView(data) {
+            document.getElementById('createForm').style.display = 'none';
+            document.getElementById('successView').style.display = 'block';
+            document.getElementById('generatedLink').value = data.chatLink;
+        }
+
+        // Copy button
+        document.getElementById('copyBtn').addEventListener('click', async function() {
+            const link = document.getElementById('generatedLink').value;
+            const success = await copyToClipboard(link);
+            
+            if (success) {
+                this.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    this.textContent = '📋 Copy Link';
+                }, 2000);
+            } else {
+                showMessage('Failed to copy link', 'error');
+            }
+        });
+
+        // Join button
+        document.getElementById('joinBtn').addEventListener('click', function() {
+            if (generatedChatLink) {
+                window.location.href = generatedChatLink;
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            document.getElementById('username').focus();
+        });
+    </script>
 </body>
 </html>

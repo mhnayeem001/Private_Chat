@@ -1,146 +1,316 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Private Chat App</title>
+    <title>Private Chat</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        /* Custom theme variables */
+        :root {
+            --bg-primary: #f9fafb;
+            --bg-secondary: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border: #e5e7eb;
+            --accent: #3b82f6;
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border: #374151;
+            --accent: #60a5fa;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+        
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-top: 12px;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+        
+        .input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 16px; /* Prevents zoom on iOS */
+        }
+        
+        .input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        .error-message {
+            background-color: #fee2e2;
+            color: #dc2626;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #fecaca;
+        }
+        
+        [data-theme="dark"] .error-message {
+            background-color: #450a0a;
+            color: #fca5a5;
+            border-color: #7f1d1d;
+        }
+        
+        .success-message {
+            background-color: #dcfce7;
+            color: #166534;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #bbf7d0;
+        }
+        
+        [data-theme="dark"] .success-message {
+            background-color: #052e16;
+            color: #86efac;
+            border-color: #166534;
+        }
+    </style>
 </head>
-<body class="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+<body>
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg id="sunIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+        <svg id="moonIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        </svg>
+    </button>
+
     <div class="min-h-screen flex items-center justify-center p-4">
-        <div class="max-w-md w-full space-y-8">
+        <div class="w-full max-w-md">
             <!-- Header -->
-            <div class="text-center">
-                <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
-                    <svg class="h-8 w-8 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
                     </svg>
                 </div>
-                <h2 class="mt-6 text-3xl font-extrabold text-gray-900 dark:text-white">
-                    Private Chat
-                </h2>
-                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    End-to-end encrypted, privacy-first messaging
-                </p>
+                <h1 class="text-2xl font-bold mb-2">Private Chat</h1>
+                <p style="color: var(--text-secondary);">Secure • Private • Simple</p>
             </div>
 
-            <!-- Theme Toggle -->
-            <div class="flex justify-center">
-                <button 
-                    id="themeToggle"
-                    class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-                    title="Toggle theme"
-                >
-                    <svg id="sunIcon" class="h-5 w-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                    </svg>
-                    <svg id="moonIcon" class="h-5 w-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                    </svg>
-                </button>
-            </div>
+            <!-- Error Messages -->
+            <div id="errorContainer"></div>
 
-            <!-- Options -->
+            <!-- Main Options -->
             <div class="space-y-4">
-                <!-- Start New Chat -->
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center space-x-4">
-                        <div class="flex-shrink-0">
-                            <div class="h-12 w-12 flex items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
-                                <svg class="h-6 w-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                </svg>
-                            </div>
+                <!-- Create New Chat -->
+                <div class="card">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
                         </div>
-                        <div class="flex-1">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                                Start New Chat
-                            </h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                Create a unique chat link to share with someone
-                            </p>
+                        <div>
+                            <h3 class="text-lg font-semibold">Start New Chat</h3>
+                            <p style="color: var(--text-secondary); font-size: 14px;">Create a private room and share the link</p>
                         </div>
                     </div>
-                    <div class="mt-4">
-                        <a href="/login" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                            Create Chat Link
-                        </a>
-                    </div>
+                    <button class="btn" onclick="window.location.href='/login'">
+                        Create Chat Room
+                    </button>
                 </div>
 
                 <!-- Join Existing Chat -->
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center space-x-4">
-                        <div class="flex-shrink-0">
-                            <div class="h-12 w-12 flex items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900">
-                                <svg class="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-                                </svg>
-                            </div>
+                <div class="card">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mr-4">
+                            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                            </svg>
                         </div>
                         <div class="flex-1">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                                Join with Link
-                            </h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                Paste a chat link you received from someone
-                            </p>
+                            <h3 class="text-lg font-semibold">Join with Link</h3>
+                            <p style="color: var(--text-secondary); font-size: 14px;">Enter a chat link to join</p>
                         </div>
                     </div>
-                    <div class="mt-4">
-                        <form id="joinForm" class="space-y-3">
-                            <input 
-                                type="url" 
-                                id="chatLink" 
-                                placeholder="Paste chat link here..."
-                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                required
-                            >
-                            <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                Join Chat
-                            </button>
-                        </form>
-                    </div>
+                    
+                    <form id="joinForm">
+                        <input 
+                            type="url" 
+                            id="chatLink" 
+                            class="input" 
+                            placeholder="Paste chat link here..."
+                            required
+                        >
+                        <button type="submit" class="btn">Join Chat</button>
+                    </form>
                 </div>
             </div>
 
-            <!-- Features -->
-            <div class="text-center text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                <p>🔒 End-to-end encrypted • 🚫 No data stored • ⏱️ Links expire in 5 minutes</p>
-                <p>📱 Mobile friendly • 🌙 Dark mode • 🖼️ Image sharing</p>
+            <!-- Features Info -->
+            <div class="text-center mt-8">
+                <p style="color: var(--text-secondary); font-size: 12px;">
+                    🔒 End-to-end encrypted • 🚫 No data stored • ⏱️ Links expire in 5 minutes
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- Toast Container -->
-    <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
-
-    <script src="/js/main.js"></script>
     <script>
-        // Handle join form
+        // Theme management
+        function initTheme() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            updateThemeIcon(theme);
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            
+            if (theme === 'dark') {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            } else {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            }
+        }
+
+        // Error handling
+        function showError(message) {
+            const container = document.getElementById('errorContainer');
+            container.innerHTML = `<div class="error-message">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const container = document.getElementById('errorContainer');
+            container.innerHTML = `<div class="success-message">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        // Check for URL parameters and show errors
+        function checkForErrors() {
+            const params = new URLSearchParams(window.location.search);
+            const error = params.get('error');
+            
+            if (error) {
+                const errorMessages = {
+                    'invalid_token': 'Invalid or expired chat link',
+                    'expired_token': 'Chat link has expired (links expire after 5 minutes)',
+                    'room_not_found': 'Chat room not found',
+                    'room_full': 'Chat room is full (maximum 2 people)'
+                };
+                
+                showError(errorMessages[error] || 'An error occurred');
+                
+                // Clean up URL
+                window.history.replaceState({}, document.title, '/');
+            }
+        }
+
+        // Join form handling
         document.getElementById('joinForm').addEventListener('submit', function(e) {
             e.preventDefault();
+            
             const link = document.getElementById('chatLink').value.trim();
             
             if (!link) {
-                showToast('Please enter a chat link', 'error');
+                showError('Please enter a chat link');
                 return;
             }
-
+            
             try {
                 const url = new URL(link);
                 const path = url.pathname;
                 
-                if (path.startsWith('/chat/')) {
+                if (path.includes('/chat/')) {
                     window.location.href = link;
                 } else {
-                    showToast('Invalid chat link format', 'error');
+                    showError('Invalid chat link format');
                 }
             } catch (e) {
-                showToast('Invalid URL format', 'error');
+                showError('Invalid URL format');
             }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+            checkForErrors();
+            
+            // Theme toggle button
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
         });
     </script>
 </body>
